@@ -69,7 +69,7 @@ func main() {
 		var resource []*Resource
 
 		if err := yaml.Unmarshal(cfgBody, &resource); err != nil {
-			fmt.Printf("failed to parse resource in %s", filepath.Join(configPath, entry.Name()))
+			fmt.Printf("failed to parse resource in %s, %v", filepath.Join(configPath, entry.Name()), err)
 			return
 		}
 
