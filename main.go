@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/manifoldco/promptui"
@@ -14,28 +15,69 @@ import (
 
 var goback2Prev = &Resource{Name: "⏎ parent ⏎", Description: "go back to previous menu"}
 
-var configPath string = "./resource.yaml"
+var configPath string = getConfigPath()
+
+func getConfigPath() string {
+	configPath := os.Getenv("CLIMGR_CONFIG_PATH")
+	if configPath == "" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			panic(err)
+		}
+
+		configPath = filepath.Join(homeDir, ".climgr/config.d")
+	}
+
+	if err := os.MkdirAll(configPath, os.ModePerm); err != nil {
+		panic(fmt.Errorf("failed to create folder: %s, %v", configPath, err))
+	}
+
+	return configPath
+}
 
 func main() {
-	var resource []*Resource
-	fd, err := os.Open(configPath)
+	var resources []*Resource
+
+	entries, err := os.ReadDir(configPath)
 	if err != nil {
-		fmt.Println(err)
-		return
+		panic(err)
 	}
 
-	cfgBody, err := ioutil.ReadAll(fd)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	if err := yaml.Unmarshal(cfgBody, &resource); err != nil {
-		fmt.Println(err)
-		return
+	for _, entry := range entries {
+
+		if entry.IsDir() {
+			continue
+		}
+
+		if !(filepath.Ext(entry.Name()) == ".yml" ||
+			filepath.Ext(entry.Name()) == ".yaml") {
+			continue
+		}
+
+		fd, err := os.Open(filepath.Join(configPath, entry.Name()))
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		cfgBody, err := ioutil.ReadAll(fd)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		var resource []*Resource
+
+		if err := yaml.Unmarshal(cfgBody, &resource); err != nil {
+			fmt.Printf("failed to parse resource in %s", filepath.Join(configPath, entry.Name()))
+			return
+		}
+
+		resources = append(resources, resource...)
 	}
 
 	menu := &ResourceMenu{
-		Items: resource,
+		Items: resources,
 	}
 
 	if err := menu.ShowPanel(); err != nil {
@@ -44,7 +86,7 @@ func main() {
 }
 
 var registeredActions = map[string]func(res *Resource) error{
-	"":      func(res *Resource) error { fmt.Println(res.Description); return nil },
+	"":      func(res *Resource) error { return nil }, // do nothing
 	"print": func(res *Resource) error { fmt.Println(res.Description); return nil },
 	"run": func(res *Resource) error {
 		if res.Command == "" {
@@ -93,7 +135,7 @@ func (rm *ResourceMenu) ShowPanel() error {
 func (rm *ResourceMenu) showPanel() (*ResourceMenu, error) {
 	template := &promptui.SelectTemplates{
 		Label:    "{{ . }}?",
-		Active:   "➤ {{ .Name | cyan }}",
+		Active:   "➤ {{ .Name | white }}",
 		Inactive: "  {{ .Name | cyan }}",
 		Selected: "➤ {{ .Name | green | cyan }}",
 		Details: `
@@ -121,13 +163,13 @@ func (rm *ResourceMenu) showPanel() (*ResourceMenu, error) {
 	}
 
 	prompt := promptui.Select{
-		Label:             "Pick your choice",
-		Items:             items,
-		Templates:         template,
-		Size:              5,
-		Searcher:          searcher,
-		StartInSearchMode: true,
-		HideSelected:      true, // 选中后不打印显示
+		Label:     "Pick your choice",
+		Items:     items,
+		Templates: template,
+		Size:      5,
+		Searcher:  searcher,
+		//StartInSearchMode: true,
+		HideSelected: true, // 选中后不打印显示
 	}
 
 	index, _, err := prompt.Run()
