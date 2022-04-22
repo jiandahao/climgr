@@ -1,0 +1,18 @@
+- name: MAC 基本操作
+  description: 记录一些平时的实用又易忘的使用方式
+  children:
+  - name: "mac显示隐藏文件"
+    description: "Command+Shift+. 可以显示隐藏文件、文件夹，再按一次，恢复隐藏"
+    selectedAction: print
+  - name: "finder下前往文件夹"
+    description: "使用Command+Shift+G 可以前往任何文件夹，包括隐藏文件夹"
+    selectedAction: print
+  - name: "任何来源的打开及关闭"
+    description: |
+
+       Mac OS任何来源的打开及关闭!
+       sudo spctl --master-disable # 开启支持安装任何来源
+       sudo spctl --master-enable # 关闭
+    selectedAction: print
+   
+	

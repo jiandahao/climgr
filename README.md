@@ -26,3 +26,8 @@ go install github.com/jiandahao/climgr
       command: "tcpdump -i eth0 -n -nn host 10.xx.xx.35" # 命令，当selectedAction为run时，选中后将执行这边定义的命令
 ```
 配置文件需要命名为以`.yml`或`yaml`为后缀。更多例子见：[resource.yaml](./_config.d/resource.yaml)
+
+TODO:
+- 支持add命令，实现通过命令行交互方式增加资源配置
+- 完善search功能，实现快速查找需要的资源
+- 选择条目，如果存在命令，则支持是否拷贝到剪贴板

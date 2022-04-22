@@ -45,3 +45,10 @@
 - name: 服务压测
   description: ab -n 100000 -c 200 -v 1 -l -k 'https://www.example.com/api/sleep'
 
+- name: Golang Pprof Analyzing
+  description: 使用pprof进行golang服务性能分析，采用的是golanger工具
+  command: |
+
+    docker run --rm -it -p 8085:8085 jiandahao/golanger:latest pprof_proxy "http://127.0.0.1:8080/debug/pprof/profile?second=60"
+    go tool pprof -http :8087 "http://127.0.0.1:8081/api/debug/pprof/heap"
+  selectedAction: print

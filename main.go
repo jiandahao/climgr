@@ -142,7 +142,7 @@ func (rm *ResourceMenu) showPanel() (*ResourceMenu, error) {
 --------- Details ----------
 {{ "Name:" | faint }}	{{ .Name }}
 {{ "Description:" | faint }}	{{ .Description }}
-{{ if .Command }} {{ "Command:" | faint }}	{{ .Command }} {{ end }}
+{{ if .Command }} {{- "Command:" | faint }}	{{ .Command }} {{ end }}
 `,
 	}
 
@@ -151,6 +151,7 @@ func (rm *ResourceMenu) showPanel() (*ResourceMenu, error) {
 		items = append([]*Resource{goback2Prev}, rm.Items...)
 	}
 
+	// TODO：search rules
 	searcher := func(input string, index int) bool {
 		resource := items[index]
 		name := strings.Replace(strings.ToLower(resource.Name), " ", "", -1)
